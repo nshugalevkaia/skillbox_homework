@@ -22,6 +22,12 @@ class ServerProtocol(LineOnlyReceiver):
 
     def connectionLost(self, reason=connectionDone):
         self.factory.clients.remove(self)
+        self.factory.List_of_login.remove(self.login)
+
+    def send_history(self):
+        self.sendLine("Last 10 messages:".encode())
+        for msg in self.factory.history:
+            self.sendLine(msg.encode())
 
     def lineReceived(self, line: bytes):
         print(f"message: {line}")
@@ -33,20 +39,17 @@ class ServerProtocol(LineOnlyReceiver):
             self.factory.history.append(content)
             for user in self.factory.clients:
                 if user is not self:
-                 user.sendLine(content.encode())
+                    user.sendLine(content.encode())
 
         else:
             if content.startswith("login:"):
                 self.login = content.replace("login:", "")
                 if self.login not in self.factory.List_of_login:
                     self.sendLine("Welcome!".encode())
-                    self.sendLine("Last 10 messages:".encode())
-                    for msg in self.factory.history:
-                        self.sendLine(msg.encode())
+                    self.send_history()
                     self.factory.List_of_login.append(self.login)
                 else:
                     self.sendLine(f"Login {self.login} is already exist, try another login!".encode())
-
             else:
                 self.sendLine("Invalid login!".encode())
 
@@ -69,4 +72,3 @@ class Server(ServerFactory):
 
 reactor.listenTCP(1234, Server())
 reactor.run()
-
