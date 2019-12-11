@@ -51,9 +51,9 @@ class ServerProtocol(LineOnlyReceiver):
                     self.factory.List_of_login.append(self.login)
                 else:
                     self.sendLine(f"Login {self.login} is already exist, try another login!".encode())
+                    self.transport.loseConnection()
             else:
                 self.sendLine("Invalid login!".encode())
-
 
 
 class Server(ServerFactory):
