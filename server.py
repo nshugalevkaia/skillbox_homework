@@ -22,7 +22,8 @@ class ServerProtocol(LineOnlyReceiver):
 
     def connectionLost(self, reason=connectionDone):
         self.factory.clients.remove(self)
-        self.factory.List_of_login.remove(self.login)
+        if self.login in self.factory.List_of_login:
+            self.factory.List_of_login.remove(self.login)
 
     def send_history(self):
         self.sendLine("Last 10 messages:".encode())
@@ -33,7 +34,7 @@ class ServerProtocol(LineOnlyReceiver):
         print(f"message: {line}")
         content = line.decode()
 
-        if self.login in self.factory.List_of_login:
+        if self.login is not None:
 
             content = f"Message from {self.login}: {content}"
             self.factory.history.append(content)
@@ -52,6 +53,7 @@ class ServerProtocol(LineOnlyReceiver):
                     self.sendLine(f"Login {self.login} is already exist, try another login!".encode())
             else:
                 self.sendLine("Invalid login!".encode())
+
 
 
 class Server(ServerFactory):
